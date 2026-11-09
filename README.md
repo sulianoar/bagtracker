@@ -85,16 +85,6 @@ Chaque objet possède :
 
 Room supporte les CTE récursives SQLite. Le chemin d'un objet est calculé ainsi :
 
-```sql
-WITH RECURSIVE path(id, name, parentId, depth) AS (
-    SELECT id, name, parentId, 0 FROM items WHERE id = :itemId
-    UNION ALL
-    SELECT i.id, i.name, i.parentId, p.depth + 1
-    FROM items i INNER JOIN path p ON i.id = p.parentId
-)
-SELECT * FROM path ORDER BY depth DESC
-```
-
 Résultat pour `Doliprane` rangé dans `Trousse › Armoire › Chambre` :
 ```
 depth 2 → Chambre
