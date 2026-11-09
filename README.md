@@ -4,22 +4,6 @@ Application Android de gestion d'inventaire personnel — rangements, sacs, boî
 
 ---
 
-## Sommaire
-
-- [Aperçu](#aperçu)
-- [Fonctionnalités](#fonctionnalités)
-- [Architecture](#architecture)
-- [Dépendances](#dépendances)
-- [Structure du projet](#structure-du-projet)
-- [Base de données](#base-de-données)
-- [Navigation](#navigation)
-- [Widget](#widget)
-- [Export / Import](#export--import)
-- [Notifications](#notifications)
-- [Exemples d'utilisation](#exemples-dutilisation)
-
----
-
 ## Aperçu
 
 BagTracker permet de savoir en permanence où se trouve chaque objet, dans quel contenant il est rangé, quand il périme, et combien il vaut. L'inventaire est hiérarchique : un sac peut contenir une trousse, qui contient des médicaments, qui ont une date de péremption.
