@@ -1,3 +1,4 @@
+
 package com.stansa.bagtracker.data
 
 import androidx.lifecycle.LiveData

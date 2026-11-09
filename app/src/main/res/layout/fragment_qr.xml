@@ -1,0 +1,42 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/textQrTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="QR Code de l'objet"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="12dp" />
+
+    <ImageView
+        android:id="@+id/imageQr"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="QR code de l'objet" />
+
+    <TextView
+        android:id="@+id/textQrContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/buttonSaveQr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enregistrer le QR code en PNG" />
+
+</LinearLayout>

@@ -67,20 +67,22 @@
         android:label="Ajouter / Modifier"
         tools:layout="@layout/fragment_add_item">
 
-        <argument
-            android:name="parentId"
-            app:argType="long"
-            android:defaultValue="-1" />
 
-        <argument
-            android:name="editItemId"
-            app:argType="long"
-            android:defaultValue="-1" />
+<argument
+    android:name="itemId"
+    app:argType="long"
+    android:defaultValue="-1" />
 
-        <argument
-            android:name="prefillBarcode"
-            app:argType="string"
-            android:defaultValue="" />
+<argument
+    android:name="barcode"
+    app:argType="string"
+    android:defaultValue="" />
+
+<argument
+    android:name="parentId"
+    app:argType="long"
+    android:defaultValue="-1" />
+
 
     </fragment>
 
