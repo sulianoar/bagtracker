@@ -1,77 +1,74 @@
 package com.stansa.bagtracker.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.stansa.bagtracker.data.AppDatabase
-import com.stansa.bagtracker.data.Tag
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-data class StatsData(
-    val totalObjects: Int,
-    val totalContainers: Int,
-    val totalValueCents: Int,
-    val expiredCount: Int,
-    val expiringSoonCount: Int,
-    val notSeenCount: Int,
-    val tagDistribution: Map<String, Int>
+data class AppStats(
+    val objectCount: Int = 0,
+    val containerCount: Int = 0,
+    val totalValueCents: Int = 0,
+    val expiredCount: Int = 0,
+    val expiringSoonCount: Int = 0,
+    val notSeenCount: Int = 0,
+    val toReplaceCount: Int = 0,
+    val tagDistribution: Map<String, Int> = emptyMap()
 )
 
 class StatsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = AppDatabase.getInstance(application)
-    private val dao = db.itemDao()
+    private val itemDao = db.itemDao()
     private val tagDao = db.tagDao()
 
-    private val _stats = MutableLiveData<StatsData>()
-    val stats: LiveData<StatsData> = _stats
+    private val _stats = MutableLiveData<AppStats>()
+    val stats: LiveData<AppStats> = _stats
+
+    init { refresh() }
 
     fun refresh() = viewModelScope.launch {
         val now = System.currentTimeMillis()
         val sevenDays = now + TimeUnit.DAYS.toMillis(7)
-        val sixMonths = now - TimeUnit.DAYS.toMillis(180)
+        val sixMonthsAgo = now - TimeUnit.DAYS.toMillis(180)
 
-        val totalObjects = dao.countObjects()
-        val totalContainers = dao.countContainers()
-        val totalValue = dao.totalValueCents() ?: 0
-        val expired = dao.getExpiredItems(now)
-        val expiringSoon = dao.getExpiringSoon(now, sevenDays)
-        val notSeen = dao.getItemsNotSeenSince(sixMonths)
+        val objectCount     = itemDao.countObjects()
+        val containerCount  = itemDao.countContainers()
+        val totalValue      = itemDao.totalValueCents() ?: 0
+        val notSeenItems    = itemDao.getItemsNotSeenSince(sixMonthsAgo)
+        val allTags         = tagDao.getAllTagsSync()
 
-        val allTags = tagDao.getAllTagsSync()
+        // Tag distribution via items
         val tagDist = mutableMapOf<String, Int>()
-        val allItems = dao.getAllItemsWithTags()
-
-        // On calcule la distribution une seule fois depuis la query existante
-        val db2 = db.openHelper.readableDatabase
-        val tagCursor = db2.query(
-            """
-            SELECT t.name, COUNT(DISTINCT ref.itemId) as cnt
-            FROM tags t
-            INNER JOIN item_tag_cross_ref ref ON t.id = ref.tagId
-            GROUP BY t.id
-            ORDER BY cnt DESC
-            """,
-            emptyArray()
-        )
-        while (tagCursor.moveToNext()) {
-            tagDist[tagCursor.getString(0)] = tagCursor.getInt(1)
+        allTags.forEach { tag ->
+            val items = itemDao.getItemsByTagSync(tag.id)
+            if (items.isNotEmpty()) tagDist[tag.name] = items.size
         }
-        tagCursor.close()
 
-        _stats.postValue(
-            StatsData(
-                totalObjects = totalObjects,
-                totalContainers = totalContainers,
-                totalValueCents = totalValue,
-                expiredCount = 0,
-                expiringSoonCount = 0,
-                notSeenCount = notSeen.size,
-                tagDistribution = tagDist
-            )
-        )
+        // Expired + expiring soon (snapshot)
+        var expiredCount = 0
+        var expiringSoonCount = 0
+        var toReplaceCount = 0
+
+        val allItems = itemDao.getAllItemsSnapshot()
+        allItems.forEach { item ->
+            item.expirationDate?.let { exp ->
+                if (exp < now) expiredCount++
+                else if (exp <= sevenDays) expiringSoonCount++
+            }
+            if (item.condition == "à remplacer" || item.condition == "cassé") toReplaceCount++
+        }
+
+        _stats.postValue(AppStats(
+            objectCount = objectCount,
+            containerCount = containerCount,
+            totalValueCents = totalValue,
+            expiredCount = expiredCount,
+            expiringSoonCount = expiringSoonCount,
+            notSeenCount = notSeenItems.size,
+            toReplaceCount = toReplaceCount,
+            tagDistribution = tagDist
+        ))
     }
 }

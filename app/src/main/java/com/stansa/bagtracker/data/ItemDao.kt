@@ -128,4 +128,14 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE parentId = :containerId")
     suspend fun getDirectChildren(containerId: Long): List<Item>
+
+    @Query("SELECT * FROM items")
+suspend fun getAllItemsSnapshot(): List<Item>
+
+@Query("""
+    SELECT i.* FROM items i
+    INNER JOIN item_tag_cross_ref ref ON i.id = ref.itemId
+    WHERE ref.tagId = :tagId
+""")
+suspend fun getItemsByTagSync(tagId: Long): List<Item>
 }
