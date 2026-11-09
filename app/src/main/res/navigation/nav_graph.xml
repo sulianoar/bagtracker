@@ -1,4 +1,6 @@
+
 <?xml version="1.0" encoding="utf-8"?>
+
 <navigation
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,7 +8,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/inventoryFragment">
 
-    <!-- INVENTORY -->
     <fragment
         android:id="@+id/inventoryFragment"
         android:name="com.stansa.bagtracker.ui.inventory.InventoryFragment"
@@ -29,9 +30,13 @@
         <action
             android:id="@+id/action_inventory_to_addItem"
             app:destination="@id/addItemFragment" />
+
+        <action
+            android:id="@+id/action_inventory_to_search"
+            app:destination="@id/searchFragment" />
+
     </fragment>
 
-    <!-- DETAIL -->
     <fragment
         android:id="@+id/itemDetailFragment"
         android:name="com.stansa.bagtracker.ui.detail.ItemDetailFragment"
@@ -53,9 +58,9 @@
         <action
             android:id="@+id/action_detail_to_qr"
             app:destination="@id/qrFragment" />
+
     </fragment>
 
-    <!-- ADD / EDIT ITEM -->
     <fragment
         android:id="@+id/addItemFragment"
         android:name="com.stansa.bagtracker.ui.additem.AddItemFragment"
@@ -76,9 +81,9 @@
             android:name="prefillBarcode"
             app:argType="string"
             android:defaultValue="" />
+
     </fragment>
 
-    <!-- SEARCH -->
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.stansa.bagtracker.ui.search.SearchFragment"
@@ -88,9 +93,17 @@
         <action
             android:id="@+id/action_search_to_detail"
             app:destination="@id/itemDetailFragment" />
+
+        <action
+            android:id="@+id/action_search_to_barcode"
+            app:destination="@id/barcodeScannerFragment" />
+
+        <action
+            android:id="@+id/action_search_to_addItem"
+            app:destination="@id/addItemFragment" />
+
     </fragment>
 
-    <!-- FLAT LIST -->
     <fragment
         android:id="@+id/flatListFragment"
         android:name="com.stansa.bagtracker.ui.flat.FlatListFragment"
@@ -100,16 +113,15 @@
         <action
             android:id="@+id/action_flat_list_to_detail"
             app:destination="@id/itemDetailFragment" />
+
     </fragment>
 
-    <!-- STATS -->
     <fragment
         android:id="@+id/statsFragment"
         android:name="com.stansa.bagtracker.ui.stats.StatsFragment"
         android:label="Statistiques"
         tools:layout="@layout/fragment_stats" />
 
-    <!-- GUIDED MODE -->
     <fragment
         android:id="@+id/guidedModeFragment"
         android:name="com.stansa.bagtracker.ui.guided.GuidedModeFragment"
@@ -119,9 +131,9 @@
         <argument
             android:name="itemId"
             app:argType="long" />
+
     </fragment>
 
-    <!-- BARCODE SCANNER -->
     <fragment
         android:id="@+id/barcodeScannerFragment"
         android:name="com.stansa.bagtracker.ui.barcode.BarcodeScannerFragment"
@@ -135,9 +147,9 @@
         <action
             android:id="@+id/action_barcode_to_addItem"
             app:destination="@id/addItemFragment" />
+
     </fragment>
 
-    <!-- QR CODE -->
     <fragment
         android:id="@+id/qrFragment"
         android:name="com.stansa.bagtracker.ui.qr.QrFragment"
@@ -147,9 +159,9 @@
         <argument
             android:name="itemId"
             app:argType="long" />
+
     </fragment>
 
-    <!-- HISTORY -->
     <fragment
         android:id="@+id/historyFragment"
         android:name="com.stansa.bagtracker.ui.history.HistoryFragment"

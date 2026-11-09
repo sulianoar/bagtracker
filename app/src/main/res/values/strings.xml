@@ -1,0 +1,10 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BagTracker</string>
+    <string name="widget_description">Suivi des objets périmés et des prochaines péremptions</string>
+    <string name="widget_title">BagTracker</string>
+    <string name="widget_search">Rechercher</string>
+    <string name="widget_expired">Périmés</string>
+    <string name="widget_expiring">Bientôt périmés</string>
+</resources>

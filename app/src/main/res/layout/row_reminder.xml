@@ -1,0 +1,35 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp">
+
+    <EditText
+        android:id="@+id/editReminderLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:hint="Nom du rappel"
+        android:inputType="textCapSentences" />
+
+    <EditText
+        android:id="@+id/editReminderDays"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Jours"
+        android:inputType="number"
+        android:text="7" />
+
+    <ImageButton
+        android:id="@+id/btnRemoveReminder"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="Supprimer le rappel"
+        android:background="?attr/selectableItemBackground" />
+
+</LinearLayout>

@@ -1,0 +1,185 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/editName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nom de l'objet"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/editEmoji"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Emoji"
+            android:text="📦" />
+
+        <CheckBox
+            android:id="@+id/checkIsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Est un contenant" />
+
+        <EditText
+            android:id="@+id/editQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Quantité"
+            android:inputType="numberDecimal"
+            android:text="1" />
+
+        <Spinner
+            android:id="@+id/spinnerUnit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="État"
+            android:paddingTop="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerCondition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/editBarcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Code-barres"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/editWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Poids en grammes"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/editVolume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Volume en cm³"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/editPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Prix en euros"
+            android:inputType="numberDecimal" />
+
+        <Button
+            android:id="@+id/buttonPickDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choisir la date de péremption" />
+
+        <TextView
+            android:id="@+id/textSelectedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aucune date sélectionnée" />
+
+        <EditText
+            android:id="@+id/editNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Notes"
+            android:gravity="top"
+            android:minLines="3"
+            android:inputType="textMultiLine" />
+
+        <Button
+            android:id="@+id/buttonPickPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choisir une photo" />
+
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Aperçu de la photo" />
+
+        <Button
+            android:id="@+id/buttonGetLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer ma position GPS" />
+
+        <TextView
+            android:id="@+id/textLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Position non définie" />
+
+        <EditText
+            android:id="@+id/editNewTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nouveau tag" />
+
+        <Button
+            android:id="@+id/buttonAddTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter le tag" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupAllTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rappels personnalisés"
+            android:textStyle="bold"
+            android:paddingTop="12dp" />
+
+        <LinearLayout
+            android:id="@+id/containerReminders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/buttonAddReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un rappel" />
+
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer" />
+
+        <Button
+            android:id="@+id/buttonDelete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Supprimer"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

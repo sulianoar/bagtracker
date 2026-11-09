@@ -1,0 +1,30 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/inventoryFragment"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Inventaire" />
+
+    <item
+        android:id="@+id/flatListFragment"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Liste" />
+
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Recherche" />
+
+    <item
+        android:id="@+id/statsFragment"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="Statistiques" />
+
+    <item
+        android:id="@+id/historyFragment"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="Historique" />
+
+</menu>
