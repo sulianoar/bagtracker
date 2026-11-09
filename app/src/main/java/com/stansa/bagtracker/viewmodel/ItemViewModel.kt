@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.*
 import com.stansa.bagtracker.data.*
+import com.stansa.bagtracker.ui.widget.BagTrackerWidgetProvider
 import com.stansa.bagtracker.util.ExportUtil
 import com.stansa.bagtracker.util.ImageUtil
 import kotlinx.coroutines.launch
@@ -47,22 +48,23 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     fun filterByTag(tagId: Long?) { _filterTagId.value = tagId }
 
     private val now = System.currentTimeMillis()
-    val expiringSoon = dao.getExpiringSoon(now, now + TimeUnit.DAYS.toMillis(7))
-    val expiredItems = dao.getExpiredItems(now)
-    val dueReminders = reminderDao.getDueRemindersLive(System.currentTimeMillis())
+    val expiringSoon   = dao.getExpiringSoon(now, now + TimeUnit.DAYS.toMillis(7))
+    val expiredItems   = dao.getExpiredItems(now)
+    val dueReminders   = reminderDao.getDueRemindersLive(System.currentTimeMillis())
     val itemsToReplace = dao.getItemsToReplace()
     val recentMovements = movementLogDao.getRecentMovements()
 
-    fun getChildrenOf(parentId: Long) = dao.getChildrenWithTags(parentId)
-    fun getMovementsForItem(itemId: Long) = movementLogDao.getMovementsForItem(itemId)
-    fun getRemindersForItem(itemId: Long) = reminderDao.getRemindersForItem(itemId)
+    fun getChildrenOf(parentId: Long)      = dao.getChildrenWithTags(parentId)
+    fun getMovementsForItem(itemId: Long)  = movementLogDao.getMovementsForItem(itemId)
+    fun getRemindersForItem(itemId: Long)  = reminderDao.getRemindersForItem(itemId)
+    fun getRecentMovements()               = movementLogDao.getRecentMovements()
 
-    suspend fun getAllContainers() = dao.getAllContainers()
-    suspend fun getItemById(id: Long) = dao.getItemById(id)
-    suspend fun getItemWithTagsById(id: Long) = dao.getItemWithTagsById(id)
+    suspend fun getAllContainers()                = dao.getAllContainers()
+    suspend fun getItemById(id: Long)            = dao.getItemById(id)
+    suspend fun getItemWithTagsById(id: Long)    = dao.getItemWithTagsById(id)
     suspend fun getItemByBarcode(barcode: String) = dao.getItemByBarcode(barcode)
-    suspend fun getFullPath(itemId: Long) = dao.getFullPath(itemId)
-    suspend fun getAllTagsSync() = tagDao.getAllTagsSync()
+    suspend fun getFullPath(itemId: Long)         = dao.getFullPath(itemId)
+    suspend fun getAllTagsSync()                   = tagDao.getAllTagsSync()
 
     fun upsertItem(item: Item, tags: List<Tag>, reminders: List<Reminder> = emptyList()) =
         viewModelScope.launch {
@@ -80,6 +82,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
             }
+            BagTrackerWidgetProvider.refresh(getApplication())
         }
 
     fun updateItem(item: Item, tags: List<Tag>, reminders: List<Reminder> = emptyList()) =
@@ -90,7 +93,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             syncReminders(item.id, reminders)
             if (oldItem?.parentId != item.parentId) {
                 val fromName = oldItem?.parentId?.let { dao.getItemById(it)?.name } ?: "Racine"
-                val toName = item.parentId?.let { dao.getItemById(it)?.name } ?: "Racine"
+                val toName   = item.parentId?.let { dao.getItemById(it)?.name } ?: "Racine"
                 movementLogDao.insert(
                     MovementLog(
                         itemId = item.id,
@@ -102,11 +105,13 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
             }
+            BagTrackerWidgetProvider.refresh(getApplication())
         }
 
     fun deleteItem(item: Item) = viewModelScope.launch {
         item.photoPath?.let { ImageUtil.deletePhoto(it) }
         dao.delete(item)
+        BagTrackerWidgetProvider.refresh(getApplication())
     }
 
     fun markReminderTriggered(reminderId: Long) = viewModelScope.launch {
@@ -128,16 +133,13 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
 
     suspend fun computeTotalWeight(containerId: Long): Int {
         var total = 0
-        fun addChildren(id: Long) {
-            // iteration iterative pour eviter stackoverflow sur hierarchies profondes
-        }
         val stack = ArrayDeque<Long>()
         stack.add(containerId)
         while (stack.isNotEmpty()) {
             val current = stack.removeFirst()
             val children = dao.getDirectChildren(current)
             children.forEach { child ->
-                total += child.weightGrams ?: 0
+                total += (child.weightGrams ?: 0) * child.quantity
                 if (child.isContainer) stack.add(child.id)
             }
         }
@@ -171,6 +173,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             val newId = dao.insert(itemWithTags.item.copy(id = 0))
             syncTags(newId, itemWithTags.tags)
         }
+        BagTrackerWidgetProvider.refresh(getApplication())
     }
 
     private suspend fun syncTags(itemId: Long, tags: List<Tag>) {
