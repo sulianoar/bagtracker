@@ -18,7 +18,6 @@ interface ItemDao {
     @Query("SELECT * FROM items ORDER BY name ASC")
     fun getAllItemsWithTags(): LiveData<List<ItemWithTags>>
 
-    // Vue liste plate avec tri dynamique
     @Transaction
     @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY name ASC")
     fun getAllObjectsSortedByName(): LiveData<List<ItemWithTags>>
@@ -28,20 +27,20 @@ interface ItemDao {
     fun getAllObjectsSortedByExpiry(): LiveData<List<ItemWithTags>>
 
     @Transaction
+    @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY priceCents DESC")
+    fun getAllObjectsSortedByValue(): LiveData<List<ItemWithTags>>
+
+    @Transaction
     @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY weightGrams DESC")
     fun getAllObjectsSortedByWeight(): LiveData<List<ItemWithTags>>
 
     @Transaction
-    @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY priceCents DESC")
-    fun getAllObjectsSortedByPrice(): LiveData<List<ItemWithTags>>
-
-    @Transaction
-    @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY condition ASC")
-    fun getAllObjectsSortedByCondition(): LiveData<List<ItemWithTags>>
-
-    @Transaction
     @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY lastSeenAt ASC")
     fun getAllObjectsSortedByLastSeen(): LiveData<List<ItemWithTags>>
+
+    @Transaction
+    @Query("SELECT * FROM items WHERE isContainer = 0 AND condition IN ('à remplacer','cassé') ORDER BY name ASC")
+    fun getItemsToReplace(): LiveData<List<ItemWithTags>>
 
     @Query("SELECT * FROM items WHERE id = :id")
     suspend fun getItemById(id: Long): Item?
@@ -49,6 +48,9 @@ interface ItemDao {
     @Transaction
     @Query("SELECT * FROM items WHERE id = :id")
     suspend fun getItemWithTagsById(id: Long): ItemWithTags?
+
+    @Query("SELECT * FROM items WHERE barcode = :barcode LIMIT 1")
+    suspend fun getItemByBarcode(barcode: String): Item?
 
     @Transaction
     @Query("""
@@ -98,8 +100,10 @@ interface ItemDao {
     suspend fun countChildren(containerId: Long): Int
 
     @Query("""
-        SELECT * FROM items WHERE expirationDate IS NOT NULL
-        AND expirationDate <= :threshold AND expirationDate >= :now
+        SELECT * FROM items
+        WHERE expirationDate IS NOT NULL
+        AND expirationDate <= :threshold
+        AND expirationDate >= :now
         ORDER BY expirationDate ASC
     """)
     fun getExpiringSoon(now: Long, threshold: Long): LiveData<List<Item>>
@@ -124,12 +128,4 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE parentId = :containerId")
     suspend fun getDirectChildren(containerId: Long): List<Item>
-
-    @Query("SELECT * FROM items WHERE barcode = :barcode LIMIT 1")
-    suspend fun findByBarcode(barcode: String): Item?
-
-    // Items à remplacer ou cassés
-    @Transaction
-    @Query("SELECT * FROM items WHERE condition IN ('TO_REPLACE','BROKEN') ORDER BY name ASC")
-    fun getItemsToReplace(): LiveData<List<ItemWithTags>>
 }

@@ -28,7 +28,7 @@ object ImageUtil {
     }
 
     fun deletePhoto(path: String) {
-        try { File(path).delete() } catch (e: Exception) { }
+        try { File(path).delete() } catch (e: Exception) {}
     }
 
     private fun resizeBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
@@ -36,9 +36,7 @@ object ImageUtil {
         val h = bitmap.height
         if (w <= maxSize && h <= maxSize) return bitmap
         val ratio = w.toFloat() / h.toFloat()
-        return if (w > h)
-            Bitmap.createScaledBitmap(bitmap, maxSize, (maxSize / ratio).toInt(), true)
-        else
-            Bitmap.createScaledBitmap(bitmap, (maxSize * ratio).toInt(), maxSize, true)
+        return if (w > h) Bitmap.createScaledBitmap(bitmap, maxSize, (maxSize / ratio).toInt(), true)
+        else Bitmap.createScaledBitmap(bitmap, (maxSize * ratio).toInt(), maxSize, true)
     }
 }
