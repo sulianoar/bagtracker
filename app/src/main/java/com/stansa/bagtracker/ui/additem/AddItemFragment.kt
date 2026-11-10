@@ -577,16 +577,31 @@ class AddItemFragment : Fragment() {
                     intervalDays = it.intervalDays.coerceAtLeast(1)
                 )
             }
+binding.buttonSave.isEnabled = false
 
-        binding.buttonSave.isEnabled = false
+lifecycleScope.launch {
+    if (
+        isEdit &&
+        vm.wouldCreateParentCycle(editItemId, parentId)
+    ) {
+        Toast.makeText(
+            requireContext(),
+            "Impossible de placer un élément dans son propre contenu.",
+            Toast.LENGTH_LONG
+        ).show()
 
-        if (isEdit) {
-            vm.updateItem(item, selectedTags, validReminders)
-        } else {
-            vm.upsertItem(item, selectedTags, validReminders)
-        }
+        binding.buttonSave.isEnabled = true
+        return@launch
+    }
 
-        findNavController().popBackStack()
+    if (isEdit) {
+        vm.updateItem(item, selectedTags, validReminders)
+    } else {
+        vm.upsertItem(item, selectedTags, validReminders)
+    }
+
+    findNavController().popBackStack()
+}
     }
 
     override fun onActivityResult(
