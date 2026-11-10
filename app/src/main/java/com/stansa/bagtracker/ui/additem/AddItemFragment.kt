@@ -1,6 +1,7 @@
 
 package com.stansa.bagtracker.ui.additem
 
+import kotlin.math.roundToInt
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -521,15 +522,49 @@ class AddItemFragment : Fragment() {
                 "La quantité doit être supérieure à zéro"
             return
         }
+val priceText = binding.editPrice.text.toString().trim()
+val price = priceText.toDoubleOrNull()
 
-        val price = binding.editPrice.text
-            .toString()
-            .toDoubleOrNull()
+if (
+    priceText.isNotEmpty() &&
+    (
+        price == null ||
+        !price.isFinite() ||
+        price < 0.0 ||
+        price > Int.MAX_VALUE / 100.0
+    )
+) {
+    binding.editPrice.error = "Prix invalide ou trop élevé"
+    return
+}
 
-        if (price != null && price < 0) {
-            binding.editPrice.error = "Prix invalide"
-            return
-        }
+val priceCents = price?.let {
+    (it * 100.0).roundToInt()
+}
+
+    val weightText = binding.editWeight.text.toString().trim()
+val weight = if (weightText.isEmpty()) {
+    null
+} else {
+    weightText.toIntOrNull()
+}
+
+if (weightText.isNotEmpty() && (weight == null || weight < 0)) {
+    binding.editWeight.error = "Poids invalide"
+    return
+}
+
+val volumeText = binding.editVolume.text.toString().trim()
+val volume = if (volumeText.isEmpty()) {
+    null
+} else {
+    volumeText.toIntOrNull()
+}
+
+if (volumeText.isNotEmpty() && (volume == null || volume < 0)) {
+    binding.editVolume.error = "Volume invalide"
+    return
+}
 
         val item = Item(
             id = if (isEdit) editItemId else 0L,
@@ -552,15 +587,9 @@ class AddItemFragment : Fragment() {
             parentId = parentId,
             expirationDate = selectedExpiryMs,
             photoPath = photoPath,
-            weightGrams = binding.editWeight.text
-                .toString()
-                .toIntOrNull(),
-            volumeCm3 = binding.editVolume.text
-                .toString()
-                .toIntOrNull(),
-            priceCents = price?.let {
-                (it * 100).toInt()
-            },
+            weightGrams = weight,
+            volumeCm3 = volume,
+            priceCents = priceCents,
             locationLat = locationLat,
             locationLng = locationLng,
             locationName = locationName,
