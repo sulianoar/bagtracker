@@ -66,53 +66,105 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getFullPath(itemId: Long)         = dao.getFullPath(itemId)
     suspend fun getAllTagsSync()                   = tagDao.getAllTagsSync()
 
-    fun upsertItem(item: Item, tags: List<Tag>, reminders: List<Reminder> = emptyList()) =
-        viewModelScope.launch {
-            val id = dao.insert(item)
-            syncTags(id, tags)
-            syncReminders(id, reminders)
-            if (item.parentId != null) {
-                val parentName = dao.getItemById(item.parentId)?.name ?: ""
-                movementLogDao.insert(
-                    MovementLog(
-                        itemId = id,
-                        toContainerId = item.parentId,
-                        toContainerName = parentName,
-                        action = "ADD"
-                    )
-                )
-            }
-            BagTrackerWidgetProvider.refresh(getApplication())
-        }
 
-    fun updateItem(item: Item, tags: List<Tag>, reminders: List<Reminder> = emptyList()) =
-        viewModelScope.launch {
-            val oldItem = dao.getItemById(item.id)
-            dao.update(item)
-            syncTags(item.id, tags)
-            syncReminders(item.id, reminders)
-            if (oldItem?.parentId != item.parentId) {
-                val fromName = oldItem?.parentId?.let { dao.getItemById(it)?.name } ?: "Racine"
-                val toName   = item.parentId?.let { dao.getItemById(it)?.name } ?: "Racine"
-                movementLogDao.insert(
-                    MovementLog(
-                        itemId = item.id,
-                        fromContainerId = oldItem?.parentId,
-                        toContainerId = item.parentId,
-                        fromContainerName = fromName,
-                        toContainerName = toName,
-                        action = "MOVE"
-                    )
-                )
-            }
-            BagTrackerWidgetProvider.refresh(getApplication())
-        }
+fun upsertItem(
+    item: Item,
+    tags: List<Tag>,
+    reminders: List<Reminder> = emptyList()
+) = viewModelScope.launch {
 
-    fun deleteItem(item: Item) = viewModelScope.launch {
-        item.photoPath?.let { ImageUtil.deletePhoto(it) }
-        dao.delete(item)
-        BagTrackerWidgetProvider.refresh(getApplication())
+    val id = dao.insert(item)
+    val savedItem = item.copy(id = id)
+
+    syncTags(id, tags)
+    syncReminders(id, reminders)
+
+    val parentName = item.parentId?.let {
+        dao.getItemById(it)?.name ?: ""
+    } ?: "Racine"
+
+    movementLogDao.insert(
+        MovementLog(
+            itemId = id,
+            itemName = savedItem.name,
+            toContainerId = item.parentId,
+            toContainerName = parentName,
+            action = "ADD"
+        )
+    )
+
+    BagTrackerWidgetProvider.refresh(getApplication())
+}
+
+
+
+fun updateItem(
+    item: Item,
+    tags: List<Tag>,
+    reminders: List<Reminder> = emptyList()
+) = viewModelScope.launch {
+
+    val oldItem = dao.getItemById(item.id) ?: return@launch
+
+    dao.update(item)
+    syncTags(item.id, tags)
+    syncReminders(item.id, reminders)
+
+    if (oldItem.parentId != item.parentId) {
+
+        val fromName = oldItem.parentId?.let {
+            dao.getItemById(it)?.name ?: ""
+        } ?: "Racine"
+
+        val toName = item.parentId?.let {
+            dao.getItemById(it)?.name ?: ""
+        } ?: "Racine"
+
+        movementLogDao.insert(
+            MovementLog(
+                itemId = item.id,
+                itemName = item.name,
+                fromContainerId = oldItem.parentId,
+                toContainerId = item.parentId,
+                fromContainerName = fromName,
+                toContainerName = toName,
+                action = "MOVE"
+            )
+        )
     }
+
+    BagTrackerWidgetProvider.refresh(getApplication())
+}
+
+
+fun deleteItem(item: Item) = viewModelScope.launch {
+
+    val currentItem = dao.getItemById(item.id)
+        ?: return@launch
+
+    val parentName = currentItem.parentId?.let {
+        dao.getItemById(it)?.name ?: ""
+    } ?: "Racine"
+
+    movementLogDao.insert(
+        MovementLog(
+            itemId = currentItem.id,
+            itemName = currentItem.name,
+            fromContainerId = currentItem.parentId,
+            fromContainerName = parentName,
+            action = "DELETE"
+        )
+    )
+
+    currentItem.photoPath?.let {
+        ImageUtil.deletePhoto(it)
+    }
+
+    dao.delete(currentItem)
+
+    BagTrackerWidgetProvider.refresh(getApplication())
+}
+
 
     fun markReminderTriggered(reminderId: Long) = viewModelScope.launch {
         val r = reminderDao.getById(reminderId) ?: return@launch
