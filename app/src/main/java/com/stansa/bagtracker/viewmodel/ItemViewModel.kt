@@ -210,21 +210,31 @@ fun deleteItem(item: Item) = viewModelScope.launch {
         return total
     }
 
-    suspend fun computeTotalValue(containerId: Long): Int {
-        var total = 0
-        val stack = ArrayDeque<Long>()
-        stack.add(containerId)
-        while (stack.isNotEmpty()) {
-            val current = stack.removeFirst()
-            val children = dao.getDirectChildren(current)
-            children.forEach { child ->
-                total += (child.priceCents ?: 0) * child.quantity
-                if (child.isContainer) stack.add(child.id)
+suspend fun computeTotalValue(containerId: Long): Long {
+    var total = 0L
+    val visited = mutableSetOf<Long>()
+    val stack = ArrayDeque<Long>()
+
+    stack.add(containerId)
+    visited.add(containerId)
+
+    while (stack.isNotEmpty()) {
+        val current = stack.removeFirst()
+
+        val children = dao.getDirectChildren(current)
+
+        children.forEach { child ->
+            total += (child.priceCents?.toLong() ?: 0L) *
+                    child.quantity.toLong()
+
+            if (child.isContainer && visited.add(child.id)) {
+                stack.add(child.id)
             }
         }
-        return total
     }
 
+    return total
+}
     fun exportAll(items: List<ItemWithTags>) = viewModelScope.launch {
         val file = ExportUtil.exportToJson(getApplication(), items)
         ExportUtil.shareExportFile(getApplication(), file)
