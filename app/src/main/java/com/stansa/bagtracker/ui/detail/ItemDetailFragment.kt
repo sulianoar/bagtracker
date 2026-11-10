@@ -99,24 +99,43 @@ class ItemDetailFragment : Fragment() {
                 }
             }
 
-            // Historique mouvements
-            vm.getMovementsForItem(itemId).observe(viewLifecycleOwner) { logs ->
-                binding.containerMovements.removeAllViews()
-                logs.forEach { log ->
-                    val tv = android.widget.TextView(requireContext()).apply {
-                        val action = when (log.action) {
-                            "ADD"  -> "Ajouté dans ${log.toContainerName}"
-                            "MOVE" -> "Déplacé de ${log.fromContainerName} → ${log.toContainerName}"
-                            else   -> log.action
-                        }
-                        text = "${dateFormat.format(Date(log.timestamp))} — $action"
-                        textSize = 12f
-                        setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
-                        setPadding(0, 4, 0, 4)
-                    }
-                    binding.containerMovements.addView(tv)
-                }
+// Historique mouvements
+vm.getMovementsForItem(itemId).observe(viewLifecycleOwner) { logs ->
+    binding.containerMovements.removeAllViews()
+
+    logs.forEach { log ->
+        val itemName = log.itemName.ifBlank { "Objet" }
+
+        val action = when (log.action) {
+            "ADD" -> {
+                val destination = log.toContainerName.ifBlank { "Racine" }
+                "➕ $itemName — Ajouté dans $destination"
             }
+
+            "MOVE" -> {
+                val origin = log.fromContainerName.ifBlank { "Racine" }
+                val destination = log.toContainerName.ifBlank { "Racine" }
+                "🔀 $itemName — Déplacé de $origin vers $destination"
+            }
+
+            "DELETE" -> {
+                val origin = log.fromContainerName.ifBlank { "Racine" }
+                "🗑️ $itemName — Supprimé depuis $origin"
+            }
+
+            else -> "$itemName — ${log.action}"
+        }
+
+        val tv = android.widget.TextView(requireContext()).apply {
+            text = "${dateFormat.format(Date(log.timestamp))} — $action"
+            textSize = 12f
+            setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
+            setPadding(0, 4, 0, 4)
+        }
+
+        binding.containerMovements.addView(tv)
+    }
+}
         }
 
         binding.buttonEdit.setOnClickListener {
