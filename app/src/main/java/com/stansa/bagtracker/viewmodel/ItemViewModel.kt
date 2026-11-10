@@ -314,8 +314,28 @@ fun importFromUri(uri: Uri) = viewModelScope.launch {
         }
     }
 
-    private suspend fun syncReminders(itemId: Long, reminders: List<Reminder>) {
-        reminderDao.deleteAllForItem(itemId)
-        reminders.forEach { reminderDao.insert(it.copy(itemId = itemId)) }
+private suspend fun syncReminders(
+    itemId: Long,
+    reminders: List<Reminder>
+) {
+    val now = System.currentTimeMillis()
+
+    reminderDao.deleteAllForItem(itemId)
+
+    reminders.forEach { reminder ->
+        val intervalDays = reminder.intervalDays.coerceAtLeast(1)
+
+        val reminderToSave = reminder.copy(
+            itemId = itemId,
+            intervalDays = intervalDays,
+            nextTriggerAt = if (reminder.id == 0L) {
+                now + TimeUnit.DAYS.toMillis(intervalDays.toLong())
+            } else {
+                reminder.nextTriggerAt
+            }
+        )
+
+        reminderDao.insert(reminderToSave)
     }
+}
 }
