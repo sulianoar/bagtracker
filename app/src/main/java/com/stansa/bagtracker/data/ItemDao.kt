@@ -77,6 +77,23 @@ interface ItemDao {
     suspend fun getAllContainers(): List<Item>
 
     @Query("""
+    WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM items WHERE id = :itemId
+        UNION
+        SELECT i.id
+        FROM items i
+        INNER JOIN descendants d ON i.parentId = d.id
+    )
+    SELECT EXISTS(
+        SELECT 1 FROM descendants WHERE id = :candidateParentId
+    )
+""")
+suspend fun wouldCreateParentCycle(
+    itemId: Long,
+    candidateParentId: Long
+): Boolean
+    
+    @Query("""
         WITH RECURSIVE path(id, name, parentId, depth) AS (
             SELECT id, name, parentId, 0 FROM items WHERE id = :itemId
             UNION ALL
