@@ -26,9 +26,13 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY expirationDate ASC")
     fun getAllObjectsSortedByExpiry(): LiveData<List<ItemWithTags>>
 
-    @Transaction
-    @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY priceCents DESC")
-    fun getAllObjectsSortedByValue(): LiveData<List<ItemWithTags>>
+@Transaction
+@Query("""
+    SELECT * FROM items
+    WHERE isContainer = 0
+    ORDER BY (priceCents * quantity) DESC
+""")
+fun getAllObjectsSortedByValue(): LiveData<List<ItemWithTags>>
 
     @Transaction
     @Query("SELECT * FROM items WHERE isContainer = 0 ORDER BY weightGrams DESC")
@@ -152,8 +156,12 @@ suspend fun getFullPath(itemId: Long): List<PathNode>
     @Query("SELECT COUNT(*) FROM items WHERE isContainer = 1")
     suspend fun countContainers(): Int
 
-    @Query("SELECT SUM(priceCents * quantity) FROM items WHERE priceCents IS NOT NULL")
-    suspend fun totalValueCents(): Int?
+@Query("""
+    SELECT COALESCE(SUM(priceCents * quantity), 0)
+    FROM items
+    WHERE priceCents IS NOT NULL
+""")
+suspend fun totalValueCents(): Long
 
     @Query("SELECT * FROM items WHERE lastSeenAt < :threshold AND isContainer = 0 ORDER BY lastSeenAt ASC")
     suspend fun getItemsNotSeenSince(threshold: Long): List<Item>
