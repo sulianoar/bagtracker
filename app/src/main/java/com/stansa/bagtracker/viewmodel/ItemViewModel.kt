@@ -195,20 +195,34 @@ fun deleteItem(item: Item) = viewModelScope.launch {
     fun savePhoto(uri: Uri, itemId: Long): String? =
         ImageUtil.saveImageFromUri(getApplication(), uri, itemId)
 
-    suspend fun computeTotalWeight(containerId: Long): Int {
-        var total = 0
-        val stack = ArrayDeque<Long>()
-        stack.add(containerId)
-        while (stack.isNotEmpty()) {
-            val current = stack.removeFirst()
-            val children = dao.getDirectChildren(current)
-            children.forEach { child ->
-                total += (child.weightGrams ?: 0) * child.quantity
-                if (child.isContainer) stack.add(child.id)
+suspend fun computeTotalWeight(containerId: Long): Long {
+    var total = 0L
+
+    val visited = mutableSetOf<Long>()
+    val stack = ArrayDeque<Long>()
+
+    stack.add(containerId)
+    visited.add(containerId)
+
+    while (stack.isNotEmpty()) {
+        val current = stack.removeFirst()
+        val children = dao.getDirectChildren(current)
+
+        children.forEach { child ->
+
+            val weight = child.weightGrams?.toLong() ?: 0L
+            val quantity = child.quantity.toLong()
+
+            total += weight * quantity
+
+            if (child.isContainer && visited.add(child.id)) {
+                stack.add(child.id)
             }
         }
-        return total
     }
+
+    return total
+}
 
 suspend fun computeTotalValue(containerId: Long): Long {
     var total = 0L
