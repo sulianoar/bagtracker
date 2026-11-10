@@ -35,7 +35,7 @@ class StatsViewModel(application: Application) : AndroidViewModel(application) {
 
         val objectCount     = itemDao.countObjects()
         val containerCount  = itemDao.countContainers()
-        val totalValue      = itemDao.totalValueCents() ?: 0
+        val totalValue = itemDao.totalValueCents()
         val notSeenItems    = itemDao.getItemsNotSeenSince(sixMonthsAgo)
         val allTags         = tagDao.getAllTagsSync()
 
