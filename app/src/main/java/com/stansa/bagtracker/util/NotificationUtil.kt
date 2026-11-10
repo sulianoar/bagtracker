@@ -1,5 +1,9 @@
 package com.stansa.bagtracker.util
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -40,19 +44,51 @@ object NotificationUtil {
         send(context, CHANNEL_REMINDER, "Rappel", "🔔 $label — $itemName", notifId)
     }
 
-    private fun send(context: Context, channel: String, title: String, message: String, notifId: Int) {
-        val intent = Intent(context, MainActivity::class.java)
-        val pi = PendingIntent.getActivity(context, notifId, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val notif = NotificationCompat.Builder(context, channel)
-            .setSmallIcon(R.drawable.ic_notif)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .setContentIntent(pi)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(notifId, notif)
+    private fun send(
+    context: Context,
+    channel: String,
+    title: String,
+    message: String,
+    notifId: Int
+) {
+    // Android 13 et versions ultérieures :
+    // ne rien envoyer si l'utilisateur a refusé la permission.
+    if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        return
     }
+
+    val intent = Intent(context, MainActivity::class.java)
+
+    val pendingIntent = PendingIntent.getActivity(
+        context,
+        notifId,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or
+            PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val notification = NotificationCompat.Builder(context, channel)
+        .setSmallIcon(R.drawable.ic_notif)
+        .setContentTitle(title)
+        .setContentText(message)
+        .setStyle(
+            NotificationCompat.BigTextStyle().bigText(message)
+        )
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .build()
+
+    val manager = context.getSystemService(
+        Context.NOTIFICATION_SERVICE
+    ) as NotificationManager
+
+    manager.notify(notifId, notification)
+}
 }
