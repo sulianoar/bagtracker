@@ -20,24 +20,35 @@ class HistoryAdapter : ListAdapter<MovementLog, HistoryAdapter.ViewHolder>(DIFF)
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val log = getItem(position)
-        val b = holder.binding
 
-        b.textDate.text = dateFormat.format(Date(log.timestamp))
+override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    val log = getItem(position)
+    val b = holder.binding
 
-        b.textAction.text = when (log.action) {
-            "ADD"    -> "➕ Ajouté"
-            "MOVE"   -> "🔀 Déplacé"
-            "DELETE" -> "🗑️ Supprimé"
-            else     -> log.action
-        }
+    b.textDate.text = dateFormat.format(Date(log.timestamp))
 
-        b.textFrom.text = if (log.fromContainerName.isBlank()) "—" else "De : ${log.fromContainerName}"
-        b.textTo.text   = if (log.toContainerName.isBlank())   "—" else "Vers : ${log.toContainerName}"
-
-        b.textFrom.visibility = if (log.action == "ADD") View.GONE else View.VISIBLE
+    b.textAction.text = when (log.action) {
+        "ADD" -> "➕ ${log.itemName} — Ajouté"
+        "MOVE" -> "🔀 ${log.itemName} — Déplacé"
+        "DELETE" -> "🗑️ ${log.itemName} — Supprimé"
+        else -> "${log.itemName} — ${log.action}"
     }
+
+    b.textFrom.text =
+        if (log.fromContainerName.isBlank()) "De : Racine"
+        else "De : ${log.fromContainerName}"
+
+    b.textTo.text =
+        if (log.toContainerName.isBlank()) "Vers : Racine"
+        else "Vers : ${log.toContainerName}"
+
+    b.textFrom.visibility =
+        if (log.action == "ADD") View.GONE else View.VISIBLE
+
+    b.textTo.visibility =
+        if (log.action == "DELETE") View.GONE else View.VISIBLE
+}
+
 
     companion object {
         val DIFF = object : DiffUtil.ItemCallback<MovementLog>() {
