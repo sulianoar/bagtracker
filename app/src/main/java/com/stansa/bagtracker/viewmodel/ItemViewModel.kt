@@ -64,6 +64,17 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getItemWithTagsById(id: Long)    = dao.getItemWithTagsById(id)
     suspend fun getItemByBarcode(barcode: String) = dao.getItemByBarcode(barcode)
     suspend fun getFullPath(itemId: Long)         = dao.getFullPath(itemId)
+    suspend fun wouldCreateParentCycle(
+    itemId: Long,
+    candidateParentId: Long?
+): Boolean {
+    if (candidateParentId == null) return false
+
+    return dao.wouldCreateParentCycle(
+        itemId = itemId,
+        candidateParentId = candidateParentId
+    )
+}
     suspend fun getAllTagsSync()                   = tagDao.getAllTagsSync()
 
 
