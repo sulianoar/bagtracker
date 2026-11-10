@@ -93,16 +93,34 @@ suspend fun wouldCreateParentCycle(
     candidateParentId: Long
 ): Boolean
     
-    @Query("""
-        WITH RECURSIVE path(id, name, parentId, depth) AS (
-            SELECT id, name, parentId, 0 FROM items WHERE id = :itemId
-            UNION ALL
-            SELECT i.id, i.name, i.parentId, p.depth + 1
-            FROM items i INNER JOIN path p ON i.id = p.parentId
-        )
-        SELECT * FROM path ORDER BY depth DESC
-    """)
-    suspend fun getFullPath(itemId: Long): List<PathNode>
+@Query("""
+    WITH RECURSIVE path(id, name, parentId, depth, visited) AS (
+        SELECT
+            id,
+            name,
+            parentId,
+            0,
+            printf('/%d/', id)
+        FROM items
+        WHERE id = :itemId
+
+        UNION ALL
+
+        SELECT
+            i.id,
+            i.name,
+            i.parentId,
+            p.depth + 1,
+            p.visited || i.id || '/'
+        FROM items i
+        INNER JOIN path p ON i.id = p.parentId
+        WHERE instr(p.visited, printf('/%d/', i.id)) = 0
+    )
+    SELECT id, name, parentId, depth
+    FROM path
+    ORDER BY depth DESC
+""")
+suspend fun getFullPath(itemId: Long): List<PathNode>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: Item): Long
