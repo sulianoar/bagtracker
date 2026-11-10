@@ -9,6 +9,7 @@ import com.stansa.bagtracker.util.ExportUtil
 import com.stansa.bagtracker.util.ImageUtil
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import androidx.room.withTransaction
 
 class ItemViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -230,14 +231,55 @@ fun deleteItem(item: Item) = viewModelScope.launch {
         ExportUtil.cleanOldExports(getApplication())
     }
 
-    fun importFromUri(uri: Uri) = viewModelScope.launch {
-        val data = ExportUtil.parseImportFile(getApplication(), uri) ?: return@launch
+fun importFromUri(uri: Uri) = viewModelScope.launch {
+    val data = ExportUtil.parseImportFile(getApplication(), uri)
+        ?: return@launch
+
+    db.withTransaction {
+        // Associe chaque ancien identifiant à son nouvel identifiant.
+        val idMapping = mutableMapOf<Long, Long>()
+
+        // Première passe : insérer tous les objets sans parent.
+        // Cela permet de gérer les exports où les enfants apparaissent
+        // avant leurs contenants.
         data.items.forEach { itemWithTags ->
-            val newId = dao.insert(itemWithTags.item.copy(id = 0))
+            val oldItem = itemWithTags.item
+
+            val newId = dao.insert(
+                oldItem.copy(
+                    id = 0L,
+                    parentId = null
+                )
+            )
+
+            idMapping[oldItem.id] = newId
+
             syncTags(newId, itemWithTags.tags)
         }
-        BagTrackerWidgetProvider.refresh(getApplication())
+
+        // Deuxième passe : rétablir les liens parent/enfant
+        // avec les nouveaux identifiants.
+        data.items.forEach { itemWithTags ->
+            val oldItem = itemWithTags.item
+            val newId = idMapping[oldItem.id] ?: return@forEach
+
+            val newParentId = oldItem.parentId?.let { oldParentId ->
+                idMapping[oldParentId]
+            }
+
+            val importedItem = dao.getItemById(newId)
+                ?: return@forEach
+
+            dao.update(
+                importedItem.copy(
+                    parentId = newParentId
+                )
+            )
+        }
     }
+
+    BagTrackerWidgetProvider.refresh(getApplication())
+}
 
     private suspend fun syncTags(itemId: Long, tags: List<Tag>) {
         tagDao.deleteAllTagsForItem(itemId)
