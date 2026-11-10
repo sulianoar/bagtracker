@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 data class AppStats(
     val objectCount: Int = 0,
     val containerCount: Int = 0,
-    val totalValueCents: Int = 0,
+    val totalValueCents: Long = 0L,
     val expiredCount: Int = 0,
     val expiringSoonCount: Int = 0,
     val notSeenCount: Int = 0,
