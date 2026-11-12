@@ -32,7 +32,7 @@ class ReminderNotificationWorker(context: Context, params: WorkerParameters) : C
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 "reminder_check",
                 ExistingPeriodicWorkPolicy.KEEP,
-                PeriodicWorkRequestBuilder<ReminderNotificationWorker>(15, TimeUnit.MINUTES).build()
+                PeriodicWorkRequestBuilder<ReminderNotificationWorker>(6, TimeUnit.HOURS).build()
             )
         }
     }

@@ -16,7 +16,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         Reminder::class,
         MovementLog::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -88,6 +88,55 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+
+private val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+
+        db.execSQL("""
+            CREATE TABLE item_tag_cross_ref_new (
+                itemId INTEGER NOT NULL,
+                tagId INTEGER NOT NULL,
+                PRIMARY KEY(itemId, tagId),
+                FOREIGN KEY(itemId)
+                    REFERENCES items(id)
+                    ON UPDATE NO ACTION
+                    ON DELETE CASCADE,
+                FOREIGN KEY(tagId)
+                    REFERENCES tags(id)
+                    ON UPDATE NO ACTION
+                    ON DELETE CASCADE
+            )
+        """)
+
+        db.execSQL("""
+            INSERT OR IGNORE INTO item_tag_cross_ref_new
+                (itemId, tagId)
+            SELECT ref.itemId, ref.tagId
+            FROM item_tag_cross_ref ref
+            INNER JOIN items i ON i.id = ref.itemId
+            INNER JOIN tags t ON t.id = ref.tagId
+        """)
+
+        db.execSQL("DROP TABLE item_tag_cross_ref")
+
+        db.execSQL("""
+            ALTER TABLE item_tag_cross_ref_new
+            RENAME TO item_tag_cross_ref
+        """)
+
+        db.execSQL("""
+            CREATE INDEX index_item_tag_cross_ref_itemId
+            ON item_tag_cross_ref(itemId)
+        """)
+
+        db.execSQL("""
+            CREATE INDEX index_item_tag_cross_ref_tagId
+            ON item_tag_cross_ref(tagId)
+        """)
+    }
+}
+
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -95,7 +144,10 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "bagtracker_db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(
+    MIGRATION_1_2,
+    MIGRATION_2_3
+)
                     .build()
                     .also { INSTANCE = it }
             }

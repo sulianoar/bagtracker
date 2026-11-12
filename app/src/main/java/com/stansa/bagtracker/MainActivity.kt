@@ -40,15 +40,25 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+ 
         // Deep link bagtracker://item/{id}/{name}
         intent?.data?.let { uri ->
             if (uri.scheme == "bagtracker" && uri.host == "item") {
                 val itemId = uri.pathSegments.getOrNull(0)?.toLongOrNull()
+
                 if (itemId != null) {
-                    val bundle = Bundle().apply { putLong("itemId", itemId) }
+                    val bundle = Bundle().apply {
+                        putLong("itemId", itemId)
+                    }
                     navController.navigate(R.id.itemDetailFragment, bundle)
                 }
             }
         }
+
+        // Raccourci de recherche depuis le widget
+        if (intent?.getBooleanExtra("open_search", false) == true) {
+            navController.navigate(R.id.searchFragment)
+        }
+
     }
 }

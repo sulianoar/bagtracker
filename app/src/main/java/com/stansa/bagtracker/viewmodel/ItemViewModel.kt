@@ -305,14 +305,24 @@ fun importFromUri(uri: Uri) = viewModelScope.launch {
     BagTrackerWidgetProvider.refresh(getApplication())
 }
 
-    private suspend fun syncTags(itemId: Long, tags: List<Tag>) {
-        tagDao.deleteAllTagsForItem(itemId)
-        tags.forEach { tag ->
-            val existing = tagDao.findByName(tag.name)
-            val tagId = existing?.id ?: tagDao.insert(tag)
-            tagDao.insertCrossRef(ItemTagCrossRef(itemId, tagId))
+
+private suspend fun syncTags(itemId: Long, tags: List<Tag>) {
+    tagDao.deleteAllTagsForItem(itemId)
+
+    tags.forEach { tag ->
+        val existing = tagDao.findByName(tag.name)
+
+        val tagId = existing?.id
+            ?: tagDao.insert(tag.copy(id = 0L))
+
+        if (tagId > 0L) {
+            tagDao.insertCrossRef(
+                ItemTagCrossRef(itemId, tagId)
+            )
         }
     }
+}
+
 
 private suspend fun syncReminders(
     itemId: Long,
